@@ -7,8 +7,9 @@ library(caTools)
 library(rpart)
 library(rpart.plot)
 
-dt2 <- fread('dt2-cleaned.csv')
-dt2[,c('gender', 'age', 'change', 'A1Cresult', 'diabetesMed', 'insulin', 'glipizide', 'metformin', "glyburide", "pioglitazone", 'admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')] <- lapply(dt1[,c('gender', 'age', 'change', 'A1Cresult', 'diabetesMed', 'insulin', 'glipizide', 'metformin', "glyburide", "pioglitazone", 'admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')], factor)
+dt2 <- fread('dt2-cleaned.csv', stringsAsFactors = T)
+sapply(dt2, class)
+dt2[,c('admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')] <- lapply(dt1[,c('admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')], factor)
 sapply(dt2, class)
 
 set.seed(2022)
