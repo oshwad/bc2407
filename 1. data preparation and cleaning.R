@@ -2,6 +2,7 @@ library(data.table)
 library(dplyr)
 library("ROSE")
 
+setwd("~/GitHub/bc2407")
 DM.dt <- fread("diabetic_data.csv",na.strings = c("NA", "missing","MISSING", "N/A", -99, "", "m", "M", "na", "."))
 
 #identify the top 5 most used meds (least number of NOs)
@@ -221,4 +222,3 @@ sapply(dt2, class)
 
 #export dt1 and dt2
 fwrite(dt1, file = 'dt1-cleaned.csv')
-fwrite(dt2, file = 'dt2-cleaned.csv')
