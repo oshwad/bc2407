@@ -39,3 +39,32 @@ varImpPlot(rf, type = 2) #mean decrease in gini
 #predict on testset
 rf.pred <- predict(rf, newdata = testset, type = 'class')
 confusionMatrix(rf.pred, reference = testset$readmitted)
+
+
+
+########################################################VERSION 2############################
+
+
+
+
+dt3 <- dt1
+dt3 <- dt3 %>% group_by() %>% slice_sample(n=2000)
+## SPLIT New Dataset into Train & Test Sets ##
+train=sample.split(Y=dt3$readmitted,SplitRatio = 0.7)
+trainset=subset(dt3,train==T)
+testset=subset(dt3,train==F)
+
+m.rf <- randomForest(readmitted ~ . , data=trainset, importance=T)
+m.rf
+
+#error plot
+plot(m.rf)
+#if categorical, there is FP, FN, overall error
+
+m.rf.y <- predict(m.rf, newdata = testset)
+ConfusionMatrixRF <- table(m.rf.y,testset$readmitted)
+ConfusionMatrixRF
+
+
+var.impt.rf <- importance(m.rf)
+print(var.impt.rf)
