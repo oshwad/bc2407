@@ -219,6 +219,16 @@ table(dt2$readmitted)
 summary(dt2)
 sapply(dt2, class)
 
+# replacing age column name
+colnames(dt2)[11] <- "age1020"
+colnames(dt2)[12] <- "age2030"
+colnames(dt2)[13] <- "age3040"
+colnames(dt2)[14] <- "age4050"
+colnames(dt2)[15] <- "age5060"
+colnames(dt2)[16] <- "age6070"
+colnames(dt2)[17] <- "age7080"
+colnames(dt2)[18] <- "age8090"
+colnames(dt2)[19] <- "age90100"
 
 #export dt1 and dt2
 fwrite(dt1, file = 'dt1-cleaned.csv')
