@@ -11,8 +11,8 @@ library(caret)
 install.packages("fastDummies")
 library(fastDummies)
 
-
-setwd("C:/Users/jieka/Desktop/BC2407 Analytics II/project")
+setwd("~/GitHub/bc2407")
+#setwd("C:/Users/jieka/Desktop/BC2407 Analytics II/project")
 DM.dt <- fread("Diabetic_data.csv",na.strings = c("NA", "missing","MISSING", "N/A", -99, "", "m", "M", "na", "."))
 
 
