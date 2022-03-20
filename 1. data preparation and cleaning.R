@@ -1,9 +1,20 @@
 library(data.table)
 library(dplyr)
-library("ROSE")
+install.packages("corrplot")
+library(corrplot)
+install.packages("ggcorrplot")
+library(ggcorrplot)
+library(neuralnet)
+library(caTools)
+library(randomForest)
+library(caret)
+install.packages("fastDummies")
+library(fastDummies)
 
-setwd("~/GitHub/bc2407")
-DM.dt <- fread("diabetic_data.csv",na.strings = c("NA", "missing","MISSING", "N/A", -99, "", "m", "M", "na", "."))
+
+setwd("C:/Users/jieka/Desktop/BC2407 Analytics II/project")
+DM.dt <- fread("Diabetic_data.csv",na.strings = c("NA", "missing","MISSING", "N/A", -99, "", "m", "M", "na", "."))
+
 
 #identify the top 5 most used meds (least number of NOs)
 #subset the meds and convert all to factor
@@ -19,32 +30,21 @@ head(med2[order(as.numeric(V2)),],5)
 #5 most used meds: insulin, metformin, glipizide, glyburide, pioglitazone
 
 #select the variables we will be using
-dt1 <- subset(DM.dt,select=c("patient_nbr", "gender","age","change","A1Cresult","diabetesMed","insulin", "metformin", "glipizide", "glyburide", "pioglitazone","admission_type_id","admission_source_id","time_in_hospital","num_lab_procedures","num_procedures", "num_medications","number_outpatient","number_emergency","number_inpatient","number_diagnoses","readmitted"))
+dt1 <- subset(DM.dt,select=c("gender","age","change","A1Cresult","diabetesMed","insulin", "metformin", "glipizide", "glyburide", "pioglitazone","admission_type_id","admission_source_id","time_in_hospital","num_lab_procedures","num_procedures", "num_medications","number_outpatient","number_emergency","number_inpatient","number_diagnoses","readmitted"))
 
-length(unique(dt1$patient_nbr)) #71518 unique patients out of the 101766 rows 
-
-#create a new variable for repeated patients as another x variable
-dt1[, repeat_patient := .N > 1, by = patient_nbr]
-dt1[,repeat_patient := ifelse(repeat_patient=="TRUE", 1, 0)]
 
 #change all categorical to factor data type 
 sapply(dt1, class) 
-dt1[,c('gender', 'age', 'change', 'A1Cresult', 'diabetesMed', 'insulin', 'glipizide', 'metformin', "glyburide", "pioglitazone", 'admission_type_id', 'readmitted', 'repeat_patient')] <- lapply(dt1[,c('gender', 'age', 'change', 'A1Cresult', 'diabetesMed', 'insulin', 'glipizide', 'metformin', "glyburide", "pioglitazone", 'admission_type_id', 'readmitted', 'repeat_patient')], factor) 
+dt1[,c('gender', 'age', 'change', 'A1Cresult', 'diabetesMed', 'insulin', 'glipizide', 'metformin', "glyburide", "pioglitazone", 'admission_type_id', 'readmitted')] <- lapply(dt1[,c('gender', 'age', 'change', 'A1Cresult', 'diabetesMed', 'insulin', 'glipizide', 'metformin', "glyburide", "pioglitazone", 'admission_type_id', 'readmitted')], factor) 
 
 #rename 'readmitted' levels: combine '>30' and 'NO' into '0', '<30' into '1'
 levels(dt1$readmitted)
 levels(dt1$readmitted) <- c('1', '0', '0')
 
+
+
 #remove the rows with unknown/invalid gender
-i<-1
-while (i <= nrow(dt1)) { 
-  if (dt1$gender[i] == 'Unknown/Invalid') { 
-    dt1 <- dt1[-c(i)] 
-    i <- i-1
-  } 
-  i<-i+1
-  
-} 
+dt1<-dt1[!(gender=="Unknown/Invalid")]
 dt1$gender <- droplevels(dt1$gender) 
 summary(dt1$gender) 
 
@@ -55,6 +55,7 @@ summary(dt1)
 #for admission_type_id: remove the rows with either not available, null or not mapped
 #5: not available, 6: null, 8: not mapped
 dt1=subset(dt1, admission_type_id != 5 & admission_type_id != 6 & admission_type_id != 8)
+dt1$admission_type_id <- droplevels(dt1$admission_type_id) 
 
 
 #for admission_source_id
@@ -71,11 +72,13 @@ while (i <= nrow(dt1)) {
   }
   i <- i + 1
 }
+
 dt1=subset(dt1, admission_source_id != 9 & admission_source_id != 15 & admission_source_id != 17 & admission_source_id != 20 & admission_source_id != 21)
 sapply(dt1, class) 
 
-dt1[,c('admission_source_id')] <- lapply(dt1[,c('admission_source_id')], factor) 
 
+dt1[,c('admission_source_id')] <- lapply(dt1[,c('admission_source_id')], factor) 
+dt1$admission_source_id <- droplevels(dt1$admission_source_id) 
 class(dt1$admission_source_id)
 
 #cleaning the continuous x variables
@@ -212,23 +215,9 @@ while (i <= nrow(dt1)) {
   
 }
 
+#Normalise continuous variables
+min_max_norm <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+dt1[,13:20] <- as.data.table(lapply(dt1[,13:20], min_max_norm))
 
-#correct class imbalance in the readmitted column
-dt2 <- ROSE(readmitted~., data = dt1, N = nrow(dt1), seed=111)$data
-table(dt2$readmitted)
-summary(dt2)
-sapply(dt2, class)
-
-# replacing age column name
-colnames(dt2)[11] <- "age1020"
-colnames(dt2)[12] <- "age2030"
-colnames(dt2)[13] <- "age3040"
-colnames(dt2)[14] <- "age4050"
-colnames(dt2)[15] <- "age5060"
-colnames(dt2)[16] <- "age6070"
-colnames(dt2)[17] <- "age7080"
-colnames(dt2)[18] <- "age8090"
-colnames(dt2)[19] <- "age90100"
-
-#export dt1 and dt2
-fwrite(dt1, file = 'dt1-cleaned.csv')
