@@ -16,7 +16,8 @@ sapply(dt1, class)
 dt2 <- ROSE(readmitted~., data = dt1, N = nrow(dt1), seed=111)$data
 table(dt2$readmitted)
 
-set.seed(2022)
+#create trainset and testset with 70-30 split
+set.seed(123)
 train = sample.split(Y = dt2$readmitted, SplitRatio = 0.7)
 trainset = subset(dt2, train == T)
 testset = subset(dt2, train == F)
@@ -24,39 +25,46 @@ testset = subset(dt2, train == F)
 trainset = trainset [, c(-1)]
 testset = testset [, c(-1)]
 
-#perform log regression with train set
+#---------------------------------------------------------------------------------------------
+#Logistic Regression
+
+#perform log regression on train set
 lr1 = glm(readmitted ~ . , family = binomial, data = trainset)
 summary(lr1)
 
 #gender, age, diabetesMed, insulin, metformin, admission_type_id, admission_source_id, time_in_hospital,
 #num_lab_procedures, num_medications, number_emergency, number_inpatient, number_diagnoses, repeat_patient
 
-
+#check for vif
 vif(lr1)
 
+#do log regression with statistically significant variables
 lr2 = glm(readmitted ~ gender + age + diabetesMed + insulin + metformin + admission_type_id 
           + admission_source_id + time_in_hospital + num_lab_procedures + num_medications
           + number_emergency + number_inpatient + number_diagnoses + repeat_patient, family = binomial, data = trainset)
 summary(lr2)
 
-testset1 =  testset[ !(testset$admission_source_id == 10),] 
-summary(testset1$admission_source_id)
-
-lr2.predict = predict(lr2, newdata = testset1, type = "response")
-result = data.table(testset1$readmitted, lr2.predict)
+#predict y with testset
+lr2.predict = predict(lr2, newdata = testset, type = "response")
+result = data.table(testset$readmitted, lr2.predict)
 View(result)
 
+#create confusion matrix
 threshold1 = 0.5
 lr2.predict.test <- ifelse(lr2.predict > threshold1, "1", "0")
-table1 <- table(Testset.Actual = testset1$readmitted, lr2.predict.test, deparse.level = 2)
+table1 <- table(Testset.Actual = testset$readmitted, lr2.predict.test, deparse.level = 2)
 table1
 
+#calculate accuracy
+(7943+11070)/nrow(testset)
+#accuracy = 0.7025
 
-
+#---------------------------------------------------------------------------------------------
 #CART 
 
 set.seed(2022)
 
+#get max tree using trainset
 c1 = rpart(readmitted ~ ., data = trainset, method = 'class', control = rpart.control(cp=0))
 
 printcp(c1)
@@ -83,8 +91,18 @@ printcp(c2)
 rpart.plot(c2,nn=T)
 
 #predict y with testset
-cart.predict<-predict(c2,newdata=testset1, type = 'class')
+cart.predict<-predict(c2,newdata=testset, type = 'class')
 cart.predict
-result1<-data.frame(testset1$readmitted,cart.predict)
+result1<-data.frame(testset$readmitted,cart.predict)
 
-confusionMatrix(cart.predict, reference = testset1$readmitted)
+confusionMatrix(cart.predict, reference = testset$readmitted)
+#accuracy=0.7248
+
+#compare the accuracy of log reg and cart
+#accuracy of log reg: 0.7025
+#accuracy of cart: 0.7248
+
+#cart is more accurate
+
+#use the significant variables from cart in neural network
+#significant variables: repeat patient, number_inpatient, number_emergency, number_outpatient, num_medications, time_in_hospital
