@@ -12,8 +12,7 @@ install.packages("fastDummies")
 library(fastDummies)
 
 setwd("~/GitHub/bc2407")
-#setwd("C:/Users/jieka/Desktop/BC2407 Analytics II/project")
-DM.dt <- fread("Diabetic_data.csv",na.strings = c("NA", "missing","MISSING", "N/A", -99, "", "m", "M", "na", "."))
+DM.dt <- fread("diabetic_data.csv",na.strings = c("NA", "missing","MISSING", "N/A", -99, "", "m", "M", "na", "."))
 
 
 #identify the top 5 most used meds (least number of NOs)
@@ -220,4 +219,7 @@ min_max_norm <- function(x) {
   (x - min(x)) / (max(x) - min(x))
 }
 dt1[,13:20] <- as.data.table(lapply(dt1[,13:20], min_max_norm))
+
+#export dt1
+fwrite(dt1, file = 'dt1-cleaned.csv')
 
