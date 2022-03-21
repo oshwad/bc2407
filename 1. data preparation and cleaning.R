@@ -221,10 +221,11 @@ min_max_norm <- function(x) {
 dt1[,13:20] <- as.data.table(lapply(dt1[,13:20], min_max_norm))
 
 #create train test split
-set.seed(2022)
+set.seed(123)
 train = sample.split(Y = dt1$readmitted, SplitRatio = 0.7)
 trainset = subset(dt1, train == T)
 testset = subset(dt1, train == F)
+
 #correct class imbalance in train set -> sampling from majority
 set.seed(123)
 majority = trainset[trainset$readmitted==0]
