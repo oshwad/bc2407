@@ -8,15 +8,16 @@ library(rpart)
 library(rpart.plot)
 
 setwd("~/GitHub/bc2407")
-dt1 <- fread('dt1-cleaned.csv', stringsAsFactors = T)
-sapply(dt1, class)
-dt1[,c('admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')] <- lapply(dt1[,c('admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')], factor)
-sapply(dt1, class)
 
-trainset = fread('trainset.csv')
-testset = fread('testset.csv')
+trainset = fread('trainset.csv',stringsAsFactors = T)
+testset = fread('testset.csv', stringsAsFactors = T)
+trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
+testset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(testset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
+sapply(trainset, class)
+sapply(testset, class)
 
-
+summary(trainset$admission_source_id)
+summary(testset$admission_source_id)
 #---------------------------------------------------------------------------------------------
 #Logistic Regression
 
@@ -24,7 +25,11 @@ testset = fread('testset.csv')
 lr1 = glm(readmitted ~ . , family = binomial, data = trainset)
 summary(lr1)
 
-#statistically significant variables
+#statistically significant variables (0.9, seed: 123)
+#age, diabetesMed, insulin, glyburide, admission_source_id, time_in_hospital,
+#number_emergency, number_inpatient, number_diagnoses
+
+#statistically significant variables (0.7, seed: 123)
 #diabetesMed, insulin, metformin, glipizide, time_in_hospital,
 #num_medications, number_emergency, number_inpatient, number_diagnoses
 
@@ -43,7 +48,10 @@ lr2.predict = predict(lr2, newdata = testset, type = "response")
 threshold = 0.5
 lr2.predict.f = factor(ifelse(lr2.predict > threshold, "1", "0"))
 confusionMatrix(lr2.predict.f, reference = testset$readmitted)
-#accuracy:0.6664
+
+#0.7, seed 123, test set bigger than train set: accuracy: 0.6664, 1584 false negative out of 27062, 0.585322
+#0.9, seed 123, test set smaller than train set: 0.6658, 528 false negative 9021, 0.0585300
+
 
 
 #---------------------------------------------------------------------------------------------
@@ -78,14 +86,16 @@ rpart.plot(c2,nn=T)
 
 #predict y with test set
 cart.predict = predict(c2, newdata=testset, type = 'class')
+#0.7 seed 123: cannot predict because test set has more levels 
+#0.9 seed 123: accuracy: 0.6664, 517 false negative out of 9021 
 
 #create confusion matrix
 confusionMatrix(cart.predict, reference = testset$readmitted)
 #accuracy: 0.6628
 
 #compare the accuracy of log reg and cart
-#accuracy of log reg: 0.6664
-#accuracy of cart: 0.6628
+#accuracy of log reg: 
+#accuracy of cart: 
 
 #log is more accurate
 
