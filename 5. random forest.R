@@ -1,25 +1,18 @@
 library(data.table)
-library("ROSE")
 library(caTools)
 library(randomForest)
 library(caret)
 
 setwd("~/GitHub/bc2407")
-dt1 <- fread('dt1-cleaned.csv', stringsAsFactors = T)
-dt1[,c('admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')] <- lapply(dt1[,c('admission_type_id', 'admission_source_id', 'readmitted', 'repeat_patient')], factor)
-dt2 <- ROSE(readmitted~., data = dt1, N = nrow(dt1), seed=111)$data
-table(dt2$readmitted)
-
-set.seed(2022)
-train = sample.split(Y = dt2$readmitted, SplitRatio = 0.7)
-trainset = subset(dt2, train == T)
-testset = subset(dt2, train == F)
-#remove patient number 
-trainset = trainset [, c(-1)]
-testset = testset [, c(-1)]
+trainset <- fread('trainset.csv', stringsAsFactors = T)
+testset <- fread('testset.csv', stringsAsFactors = T)
+trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
+testset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(testset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
+testset <- rbind(testset[1, ] , trainset)
+testset <- trainset[-1,]
 
 y = trainset$readmitted
-x = trainset[,names(trainset) != "readmitted"]
+x = data.table(trainset[,c("gender", "age", "change", "A1Cresult", "diabetesMed", "insulin", "metformin", "glipizide", "glyburide", "pioglitazone", "admission_type_id", "admission_source_id", "time_in_hospital", "num_lab_procedures", "num_procedures", "num_medications", "number_outpatient", "number_emergency", "number_inpatient", "number_diagnoses")])
 set.seed(1)  #for bootstrap sampling & RSF selection
 rf <- randomForest(x, y = y, ntree = 500, importance = T, do.trace = TRUE)
 saveRDS(rf, file = 'random-forest-model.rds')
@@ -27,9 +20,9 @@ saveRDS(rf, file = 'random-forest-model.rds')
 #metrics of trainset
 rf <- readRDS('random-forest-model.rds')
 rf  #using ntree = 500 & default RSF size = floor(sqrt(ncol(x))) = 4
-  # OOB error rate = 24.83%
-  # false negative rate = 18.32%
-  # false positive rate = 31.32%
+  # OOB error rate = 41.78%
+  # false negative rate = 44.70%
+  # false positive rate = 38.87%
 plot(rf)
 var.impt <- importance(rf)
 var.impt
