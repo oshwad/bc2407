@@ -46,49 +46,6 @@ confusionMatrix(lr2.predict.f, reference = testset$readmitted)
 #accuracy:0.6664
 
 
-#---------------------------------------------------------------------------------------------
-#CART
-
-#get max tree using trainset
-set.seed(123)
-c1 = rpart(readmitted ~ ., data = trainset, method = 'class', control = rpart.control(cp=0))
-
-printcp(c1)
-plotcp(c1)
-
-#find cp value for pruning
-CVerror.cap = c1$cptable[which.min(c1$cptable[,"xerror"]),"xerror"] +
-  c1$cptable[which.min(c1$cptable[,"xerror"]),"xstd"]
-
-i<-1;j<-4
-while (c1$cptable[i,j]>CVerror.cap){
-  i<-i+1
-}
-
-cp.opt = ifelse(i>1,sqrt(c1$cptable[i,1]*c1$cptable[i-1,1]),1)
-
-print(cp.opt)
-
-# prune to get optimal tree
-c2 = prune(c1,cp=cp.opt)
-printcp(c2)
-
-#regression tree (optimal)
-rpart.plot(c2,nn=T)
-
-#predict y with test set
-cart.predict = predict(c2, newdata=testset, type = 'class')
-
-#create confusion matrix
-confusionMatrix(cart.predict, reference = testset$readmitted)
-#accuracy: 0.6628
-
-#compare the accuracy of log reg and cart
-#accuracy of log reg: 0.6664
-#accuracy of cart: 0.6628
-
-#log is more accurate
-
 #use the significant variables from log reg for neural network
 #diabetesMed, insulin, metformin, glipizide, time_in_hospital, num_medications
 #number_emergency, number_inpatient, number_diagnoses
