@@ -21,38 +21,31 @@ testset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(
 lr1 = glm(readmitted ~ . , family = binomial, data = trainset)
 summary(lr1)
 
+#check for vif
+vif(lr1)
+#no need to remove any variables due to vif
+
 #use the step function to determine the variables to use in the model
 s1 = step(lr1)
 summary(s1)
 s1$coefficients
 
-#variables to use after backward elimination
+#variables to use after backward elimination with step 
 #age, A1Cresult, diabetesMed, insulin, metformin, time_in_hospital
-#num_procedures, num_medications, number_emergency, number_inpatient, number_diagnoses
-
-#check for vif
-vif(lr1)
-#no need to remove any variables due to vif
-
-#do log regression with variables identified using the step function
-lr2 = glm(readmitted ~ age + A1Cresult + diabetesMed + insulin + 
-            metformin + time_in_hospital + num_procedures + num_medications + 
-            number_emergency + number_inpatient + number_diagnoses, family = binomial, 
-          data = trainset)
-summary(lr2)
+#num_procedures, num_medications, number_outpatient, number_emergency,
+#number_inpatient, number_diagnoses
 
 #predict y with test set
-lr2.predict = predict(lr2, newdata = testset, type = "response")
+s1.predict = predict(s1, newdata = testset, type = "response")
 
 #create confusion matrix
 threshold = 0.5
-lr2.predict.f = factor(ifelse(lr2.predict > threshold, "1", "0"))
-confusionMatrix(lr2.predict.f, reference = testset$readmitted)
+s1.predict.f = factor(ifelse(s1.predict > threshold, "1", "0"))
+confusionMatrix(s1.predict.f, reference = testset$readmitted)
 
-#accuracy:0.8874
-
+#accuracy:0.6545
 
 #use the significant variables from log reg for neural network
 #age, A1Cresult, diabetesMed, insulin, metformin, time_in_hospital, num_procedures
-#num_medications, number_emergency, number_inpatient, number_diagnoses
+#num_medications, number_outpatient, number_emergency, number_inpatient, number_diagnoses
 
