@@ -3,7 +3,12 @@ library(data.table)
 library(neuralnet)
 
 
+
 #Neural Network
+
+saveRDS(rf, file = 'Neural-Network-model.rds')
+nn <- readRDS('Neural-Network-model.rds')
+
 set.seed(2022) 
 
 train = sample.split(Y = dt1$readmitted, SplitRatio = 0.9)
@@ -29,32 +34,47 @@ for(col in cols.fac)
 for(col in cols.fac)
   set(testset, j = col, value = as.factor(testset[[col]]))
 #create dummy variables
-trainset <- dummy_cols(trainset, select_columns = cols.fac,remove_selected_columns = TRUE)
-testset <- dummy_cols(testset, select_columns = cols.fac,remove_selected_columns = TRUE)
+trainset <- dummy_cols(trainset, select_columns = cols.fac,remove_selected_columns = TRUE,remove_first_dummy = T)
+testset <- dummy_cols(testset, select_columns = cols.fac,remove_selected_columns = TRUE,remove_first_dummy = T)
 
+trainset[,"readmitted_1"] <- 0
+testset[,"readmitted_1"] <- 0
+for (i in 1:nrow(trainset)) {
+  if (trainset$readmitted_0[i] == 0) {
+    trainset$readmitted_1[i] = 1
+  }
+}
 
+for (i in 1:nrow(testset)) {
+  if (testset$readmitted_0[i] == 0) {
+    testset$readmitted_1[i] = 1
+  }
+}
 
 #replacing column names
-colnames(trainset)[11] <- "age1020"
-colnames(trainset)[12] <- "age2030"
-colnames(trainset)[13] <- "age3040"
-colnames(trainset)[14] <- "age4050"
-colnames(trainset)[15] <- "age5060"
-colnames(trainset)[16] <- "age6070"
-colnames(trainset)[17] <- "age7080"
-colnames(trainset)[18] <- "age8090"
-colnames(trainset)[19] <- "age90100"
+colnames(trainset)[10] <- "age1020"
+colnames(trainset)[11] <- "age2030"
+colnames(trainset)[12] <- "age3040"
+colnames(trainset)[13] <- "age4050"
+colnames(trainset)[14] <- "age5060"
+colnames(trainset)[15] <- "age6070"
+colnames(trainset)[16] <- "age7080"
+colnames(trainset)[17] <- "age8090"
+colnames(trainset)[18] <- "age90100"
 
 #replacing column names
-colnames(testset)[11] <- "age1020"
-colnames(testset)[12] <- "age2030"
-colnames(testset)[13] <- "age3040"
-colnames(testset)[14] <- "age4050"
-colnames(testset)[15] <- "age5060"
-colnames(testset)[16] <- "age6070"
-colnames(testset)[17] <- "age7080"
-colnames(testset)[18] <- "age8090"
-colnames(testset)[19] <- "age90100"
+colnames(testset)[10] <- "age1020"
+colnames(testset)[11] <- "age2030"
+colnames(testset)[12] <- "age3040"
+colnames(testset)[13] <- "age4050"
+colnames(testset)[14] <- "age5060"
+colnames(testset)[15] <- "age6070"
+colnames(testset)[16] <- "age7080"
+colnames(testset)[17] <- "age8090"
+colnames(testset)[18] <- "age90100"
+
+
+
 
 
 #start neuralnet model
@@ -74,9 +94,11 @@ set.seed(2022)
 # # y_train <- subset(subset(nndt, select = c(readmitted_0)), train == T)
 # y_test <- subset(subset(nndt, select = c(readmitted_0)), train == F)
 
-trainSize<-4000
+sample_rows = sample(1:nrow(trainset), size=10000)
 
-nnModel <- neuralnet(readmitted_0~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+metformin_No+metformin_Steady+metformin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[1:trainSize,], hidden = c(2), err.fct = "ce", linear.output = FALSE)
+set.seed(2022)
+
+nnModel <- neuralnet(readmitted_1~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(1,1),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
 
 #nnModel <- neuralnet(readmitted_0~ ., data = trainset[1:trainSize], hidden = c(2,1), err.fct = "ce", linear.output = FALSE)
 
@@ -96,6 +118,5 @@ nnPred <- predict(nnModel,newdata = testset)
 nnPred
 # Test set Confusion matrix
 nnPredCases <- as.numeric(nnPred>0.5)
-t <- table(nnPredCases, testset$readmitted_0)
+t <- table(nnPredCases, testset$readmitted_1)
 t
-
