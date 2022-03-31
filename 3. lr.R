@@ -30,11 +30,6 @@ s1 = step(lr1)
 summary(s1)
 s1$coefficients
 
-#variables to use after backward elimination with step 
-#age, A1Cresult, diabetesMed, insulin, metformin, time_in_hospital
-#num_procedures, num_medications, number_outpatient, number_emergency,
-#number_inpatient, number_diagnoses
-
 #predict y with test set
 s1.predict = predict(s1, newdata = testset, type = "response")
 
@@ -43,9 +38,7 @@ threshold = 0.5
 s1.predict.f = factor(ifelse(s1.predict > threshold, "1", "0"))
 confusionMatrix(s1.predict.f, reference = testset$readmitted)
 
-#accuracy:0.6545
+#accuracy:0.6669
 
 #use the significant variables from log reg for neural network
-#age, A1Cresult, diabetesMed, insulin, metformin, time_in_hospital, num_procedures
-#num_medications, number_outpatient, number_emergency, number_inpatient, number_diagnoses
 
