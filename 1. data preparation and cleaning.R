@@ -222,13 +222,23 @@ dt1[,13:20] <- as.data.table(lapply(dt1[,13:20], min_max_norm))
 
 #create train test split
 set.seed(2022)
-train = sample.split(Y = dt1$readmitted, SplitRatio = 0.7)
+train = sample.split(Y = dt1$readmitted, SplitRatio = 0.9)
 trainset = subset(dt1, train == T)
 testset = subset(dt1, train == F)
 
+#correct class imbalance in train set -> sampling from majority
+set.seed(2022)
+majority = trainset[trainset$readmitted==0]
+minority = trainset[trainset$readmitted==1]
+sample_rows = sample(1:nrow(majority), size=nrow(minority))
+trainset_balanced = majority[sample_rows,]
+trainset_balanced = rbind(minority, trainset_balanced)
+summary(trainset_balanced)
+trainset <- trainset_balanced
 
 #export dt1, testset, and trainset
 fwrite(dt1, file = 'dt1-cleaned.csv')
 fwrite(trainset, file = 'trainset.csv')
 fwrite(testset, file = 'testset.csv')
+
 
