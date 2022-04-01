@@ -26,8 +26,6 @@ vif(lr1)
 
 #use the step function to determine the variables to use in the model
 s1 = step(lr1)
-summary(s1)
-s1$coefficients
 
 #predict y with test set
 s1.predict = predict(s1, newdata = testset, type = "response")
@@ -39,5 +37,6 @@ confusionMatrix(s1.predict.f, reference = testset$readmitted)
 
 #accuracy:0.6669
 
-#use the significant variables from log reg for neural network
+summary(s1)
+#use the statistically significant variables from log reg for neural network
 
