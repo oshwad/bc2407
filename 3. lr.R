@@ -4,8 +4,7 @@ library(caret)
 library(Metrics)
 library(car)
 library(caTools)
-library(rpart)
-library(rpart.plot)
+
 
 setwd("~/GitHub/bc2407")
 
