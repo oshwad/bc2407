@@ -104,3 +104,5 @@ cm <- confusionMatrix(rf.pred, reference = testset$readmitted)
 (cm$table[1,2])/(cm$table[1,2]+cm$table[2,2]) # FNR = 0.404
 saveRDS(rf3, file = 'r-random-forest-opt-mtry.rds')
 rf3 <- readRDS('r-random-forest-opt-mtry.rds')
+plot(rf3)
+varImpPlot(rf3, type = 1)
