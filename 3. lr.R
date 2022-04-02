@@ -40,3 +40,8 @@ confusionMatrix(s1.predict.f, reference = testset$readmitted)
 summary(s1)
 #use the statistically significant variables from log reg for neural network
 
+#trainset error
+train.predict = predict(s1, newdata = trainset, type = "response")
+train.predict.f = factor(ifelse(train.predict > threshold, "1", "0"))
+confusionMatrix(train.predict.f, reference = trainset$readmitted)
+
