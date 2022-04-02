@@ -98,11 +98,12 @@ for(i in 1:20){
 saveRDS(test_metrics, file = 'r-random-forest-mtry-test.rds')
 set.seed(2022)  #for bootstrap sampling & RSF selection
 rf3 <- randomForest(readmitted ~ ., data = trainset, ntree = 500, mtry = 8, importance = T, do.trace = TRUE)
+rf3 <- readRDS('r-random-forest-opt-mtry.rds')
+rf3
+plot(rf3)
+varImpPlot(rf3, type = 1)
 rf.pred <- predict(rf3, newdata = testset, type = 'class')
 confusionMatrix(rf.pred, reference = testset$readmitted)
 cm <- confusionMatrix(rf.pred, reference = testset$readmitted)
 (cm$table[1,2])/(cm$table[1,2]+cm$table[2,2]) # FNR = 0.404
 saveRDS(rf3, file = 'r-random-forest-opt-mtry.rds')
-rf3 <- readRDS('r-random-forest-opt-mtry.rds')
-plot(rf3)
-varImpPlot(rf3, type = 1)
