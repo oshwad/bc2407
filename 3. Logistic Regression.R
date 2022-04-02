@@ -8,9 +8,9 @@ library(caTools)
 
 setwd("~/GitHub/bc2407")
 
-trainset = fread('trainset.csv', stringsAsFactors = T)
+trainset = fread('data-trainset.csv', stringsAsFactors = T)
 trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
-testset = fread('testset.csv', stringsAsFactors = T)
+testset = fread('data-testset.csv', stringsAsFactors = T)
 testset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(testset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
 
 #---------------------------------------------------------------------------------------------

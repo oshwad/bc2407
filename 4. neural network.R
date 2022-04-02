@@ -6,8 +6,8 @@ library(neuralnet)
 
 #Neural Network
 
-saveRDS(rf, file = 'Neural-Network-model.rds')
-nn <- readRDS('Neural-Network-model.rds')
+saveRDS(rf, file = 'r-Neural-Network-model.rds')
+nn <- readRDS('r-Neural-Network-model.rds')
 
 set.seed(2022) 
 
