@@ -2,7 +2,7 @@ library(corrplot)
 library(ggcorrplot)
 library(ggplot2)
 
-data1 = DM.dt
+data1 = fread('data-diabetic_data.csv')
 
 #select the variables we will be using
 data1 <- subset(data1,select=c("gender","age","change","A1Cresult","diabetesMed","insulin", "metformin", "glipizide", "glyburide", "pioglitazone","admission_type_id","admission_source_id","time_in_hospital","num_lab_procedures","num_procedures", "num_medications","number_outpatient","number_emergency","number_inpatient","number_diagnoses","readmitted"))
