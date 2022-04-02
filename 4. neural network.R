@@ -3,6 +3,7 @@ library(data.table)
 library(neuralnet)
 
 
+
 #Neural Network
 
 saveRDS(rf, file = 'Neural-Network-model.rds')
@@ -97,7 +98,7 @@ sample_rows = sample(1:nrow(trainset), size=10000)
 
 set.seed(2022)
 
-nnModel <- neuralnet(readmitted_1~age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(2,1),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
+nnModel <- neuralnet(readmitted_1~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(2,1),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
 
 #nnModel <- neuralnet(readmitted_0~ ., data = trainset[1:trainSize], hidden = c(2,1), err.fct = "ce", linear.output = FALSE)
 
@@ -117,5 +118,12 @@ nnPred <- predict(nnModel,newdata = testset)
 nnPred
 # Test set Confusion matrix
 nnPredCases <- as.numeric(nnPred>0.5)
-t <- table(nnPredCases, testset$readmitted_1)
-t
+t_testset <- table(nnPredCases, testset$readmitted_1)
+t_testset
+
+# Train set Confusion Matrix
+predicted.cases <- ifelse(unlist(nnModel$net.result[[1]][,1]) > 0.5, 1, 0)  
+length(predicted.cases)
+trainset2 <- trainset[sample_rows,]
+t_trainset <- table(predicted.cases,trainset2$readmitted_1)  
+confusionMatrix(t_trainset)
