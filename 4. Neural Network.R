@@ -9,6 +9,10 @@ trainset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply
 testset <- fread('data-testset.csv', stringsAsFactors = T)
 testset[,c('admission_type_id', 'admission_source_id', 'readmitted')] <- lapply(testset[,c('admission_type_id', 'admission_source_id', 'readmitted')], factor)
 
+cols.fac <- c("gender","age","admission_type_id","admission_source_id","A1Cresult",
+              "metformin","glipizide","glyburide",
+              "pioglitazone","insulin","change","diabetesMed","readmitted")
+
 #create dummy variables
 trainset <- dummy_cols(trainset, select_columns = cols.fac,remove_selected_columns = TRUE,remove_first_dummy = T)
 testset <- dummy_cols(testset, select_columns = cols.fac,remove_selected_columns = TRUE,remove_first_dummy = T)
