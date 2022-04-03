@@ -5,8 +5,7 @@ library(neuralnet)
 
 #Neural Network
 
-saveRDS(rf, file = 'r-Neural-Network-model.rds')
-nn <- readRDS('r-Neural-Network-model.rds')
+
 
 set.seed(2022) 
 
@@ -18,7 +17,6 @@ testset = subset(dt1, train == F)
 trainset <- downSample(trainset[,1:20], trainset$readmitted, yname = 'readmitted')
 
 summary(trainset$readmitted)
-
 
 
 
@@ -78,30 +76,21 @@ colnames(testset)[18] <- "age90100"
 
 #start neuralnet model
 set.seed(2022)
-# nndt <- subset(trainset,select=c("age1020","age2030","age3040","age4050","age5060","age6070","age7080","age8090","age90100","diabetesMed_Yes", "insulin_No","insulin_Steady","insulin_Up","metformin_No","metformin_Steady","metformin_Up","time_in_hospital","num_procedures","num_medications","number_emergency","number_inpatient","number_diagnoses" ,"readmitted_0"))
-# 
-# testset1 <- subset(testset,select=c("age1020","age2030","age3040","age4050","age5060","age6070","age7080","age8090","age90100","diabetesMed_Yes", "insulin_No","insulin_Steady","insulin_Up","metformin_No","metformin_Steady","metformin_Up","time_in_hospital","num_procedures","num_medications","number_emergency","number_inpatient","number_diagnoses" ,"readmitted_0"))
-
-
-
-
-# # train <- sample.split(Y = nndt$readmitted_0, SplitRatio = 0.7)
-# # trainset <- subset(nndt, train == T)
-# # testset <- subset(nndt, train == F)
-# # x_train <- subset(subset(nndt, select = -c(readmitted_0)), train == T)
-# x_test <- subset(subset(nndt, select = -c(readmitted_0)), train == F)
-# # y_train <- subset(subset(nndt, select = c(readmitted_0)), train == T)
-# y_test <- subset(subset(nndt, select = c(readmitted_0)), train == F)
 
 sample_rows = sample(1:nrow(trainset), size=10000)
 
 set.seed(2022)
 
 nnModel <- neuralnet(readmitted_1~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(2,1),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
+saveRDS(nnModel, file = 'r-Neural-Network-model.rds')
+nnModel <- readRDS('r-Neural-Network-model.rds')
 
-#nnModel <- neuralnet(readmitted_0~ ., data = trainset[1:trainSize], hidden = c(2,1), err.fct = "ce", linear.output = FALSE)
 
-#nnModel <- neuralnet(readmitted_0~ ., data = trainset[1:trainSize], hidden = c(1,1), err.fct = "ce", linear.output = FALSE)
+#3 other tests with changes to their hyperparameters
+#nnModel <- neuralnet(readmitted_1~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(2),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
+#nnModel <- neuralnet(readmitted_1~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(1),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
+#nnModel <- neuralnet(readmitted_1~ age1020+age2030+age3040+age4050+age5060+age6070+age7080+age8090+age90100+diabetesMed_Yes+insulin_No+insulin_Steady+insulin_Up+time_in_hospital+num_procedures+num_medications+number_emergency+number_inpatient+number_diagnoses, data = trainset[sample_rows,], hidden = c(1,1),act.fct="tanh", linear.output = FALSE,stepmax=1e7)
+
 
 nnModel$startweights   # starting weights used
 nnModel$weights        # Final optimised weights
@@ -115,6 +104,7 @@ plot(nnModel)
 # Prediction
 nnPred <- predict(nnModel,newdata = testset)
 nnPred
+
 # Test set Confusion matrix
 nnPredCases <- as.numeric(nnPred>0.5)
 t_testset <- table(nnPredCases, testset$readmitted_1)
