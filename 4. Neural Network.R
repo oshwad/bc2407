@@ -2,6 +2,7 @@ library(data.table)
 library(neuralnet)
 library(fastDummies)
 library(caret)
+library(caTools)
 
 setwd("~/GitHub/bc2407")
 set.seed(2022) 
